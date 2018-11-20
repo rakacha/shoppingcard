@@ -1,0 +1,23 @@
+package com.abcshopping.salesorder.controller;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+@ControllerAdvice
+class SalesOrderServiceControllerAdvice extends ResponseEntityExceptionHandler {
+
+	@ExceptionHandler(value = { HttpClientErrorException.class })
+	protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
+		String bodyOfResponse = "<h1><font face=\"verdana\">No Directory found.</font></h1>";
+		return handleExceptionInternal(ex, bodyOfResponse,
+				new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
+}
+
+
