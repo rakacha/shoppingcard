@@ -31,10 +31,10 @@ public class SalesOrderServiceController {
 	@Autowired
 	private SalesOrderService salesOrderService;
 	
-	private String url;
+	private String serviceName;
 
-	SalesOrderServiceController(@Value("${item.service.url}") String url){
-		this.url = url;
+	SalesOrderServiceController(@Value("${item.service.name}") String serviceName){
+		this.serviceName = serviceName;
 	}
 
 	@PostMapping("/orders")
@@ -46,7 +46,7 @@ public class SalesOrderServiceController {
 		if(salesOrderitems == null) {
 			headerMessage = "No items for creating order!";
 		}else {
-			headerMessage = salesOrderService.getSalesOrderItems(salesOrder, headerMessage, url, salesOrderitems, responseSalesOrderitems);
+			headerMessage = salesOrderService.getSalesOrderItems(salesOrder, headerMessage, serviceName, salesOrderitems, responseSalesOrderitems);
 		}
 		SalesOrder savedSalesOrder = null;
 		if(responseSalesOrderitems.size() > 0) {
