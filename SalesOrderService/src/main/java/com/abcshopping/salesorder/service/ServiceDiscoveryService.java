@@ -1,10 +1,12 @@
 package com.abcshopping.salesorder.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 
+@Service
 public class ServiceDiscoveryService {
 
 	@Autowired
