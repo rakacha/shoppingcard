@@ -4,11 +4,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
 import com.abcshopping.salesorder.domain.Customer_SOS;
 import com.abcshopping.salesorder.repository.CustomerSOSRepository;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class SalesOrderServiceApplication {
 
 	public static void main(String[] args) {
