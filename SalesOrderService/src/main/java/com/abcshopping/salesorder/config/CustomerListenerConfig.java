@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CustomerListenerConfig {
 	private ConnectionFactory connectionFactory;
-	private String queueUrl;
+	private final String queueUrl;
     @Autowired
     public CustomerListenerConfig(@Value("${customer.queue}") String queueUrl, ConnectionFactory connectionFactory){
         this.queueUrl = queueUrl;
@@ -20,7 +20,12 @@ public class CustomerListenerConfig {
     }
 
 
-    @Bean
+    public String getQueueUrl() {
+		return queueUrl;
+	}
+
+
+	@Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(this.connectionFactory);

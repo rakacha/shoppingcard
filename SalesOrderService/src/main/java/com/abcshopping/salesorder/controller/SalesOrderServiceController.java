@@ -3,6 +3,7 @@ package com.abcshopping.salesorder.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -13,25 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.abcshopping.salesorder.domain.Customer_SOS;
 import com.abcshopping.salesorder.domain.SalesOrder;
 import com.abcshopping.salesorder.domain.SalesOrderItem;
-import com.abcshopping.salesorder.repository.SalesOrderItemRepository;
-import com.abcshopping.salesorder.repository.SalesOrderRepository;
-import com.abcshopping.salesorder.service.SalesOrderService;
+import com.abcshopping.salesorder.repository.CustomerSOSRepository;
+import com.abcshopping.salesorder.service.SalesOrderSavingService;
+import com.abcshopping.salesorder.service.SalesOrderItemValidationService;
 
 @RestController
 public class SalesOrderServiceController {
+	
+	@Autowired
+	private CustomerSOSRepository customerSOSRepository;
+	
+	
+	@RabbitListener(queues = "spring-boot-customer-236220")
+	public void receiveMessage(Customer_SOS customerSOS) {
+		Customer_SOS savedCustomerSOS  = customerSOSRepository.save(customerSOS);
+		
+		assert savedCustomerSOS != null;
+	}
+
+
 
 	@Autowired
-	private SalesOrderRepository salesOrderRepository;
+	private SalesOrderItemValidationService salesOrderItemValidationService;
 	
 	@Autowired
-	private SalesOrderItemRepository salesOrderItemRepository;
+	private  SalesOrderSavingService salesOrderSavingService;
 	
-	@Autowired
-	private SalesOrderService salesOrderService;
-	
-	private String serviceName;
+	private final String serviceName;
 
 	SalesOrderServiceController(@Value("${item.service.name}") String serviceName){
 		this.serviceName = serviceName;
@@ -46,17 +58,10 @@ public class SalesOrderServiceController {
 		if(salesOrderitems == null) {
 			headerMessage = "No items for creating order!";
 		}else {
-			headerMessage = salesOrderService.getSalesOrderItems(salesOrder, headerMessage, serviceName, salesOrderitems, responseSalesOrderitems);
+			headerMessage = salesOrderItemValidationService.getSalesOrderItems(salesOrder, headerMessage, serviceName, salesOrderitems, responseSalesOrderitems);
 		}
 		SalesOrder savedSalesOrder = null;
-		if(responseSalesOrderitems.size() > 0) {
-			savedSalesOrder = salesOrderRepository.save(salesOrder);
-			
-			for(SalesOrderItem item : responseSalesOrderitems) {
-				item.setOrderId(savedSalesOrder.getId());
-				salesOrderItemRepository.save(item);
-			}
-		}
+		savedSalesOrder = salesOrderSavingService.saveSalesOrderItems(salesOrder, responseSalesOrderitems, savedSalesOrder);
 		
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setLocation(ServletUriComponentsBuilder
@@ -70,6 +75,5 @@ public class SalesOrderServiceController {
 
 		return new ResponseEntity<>(savedSalesOrder, httpHeaders, HttpStatus.CREATED);
 	}
-
 
 }

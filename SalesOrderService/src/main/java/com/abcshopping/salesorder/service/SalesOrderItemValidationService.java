@@ -18,9 +18,9 @@ import com.abcshopping.salesorder.domain.SalesOrderItem;
 import com.netflix.discovery.EurekaClient;
 
 @Service
-public class SalesOrderService {
+public class SalesOrderItemValidationService {
 
-	public SalesOrderService() {
+	public SalesOrderItemValidationService() {
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -33,7 +33,7 @@ public class SalesOrderService {
 		for(SalesOrderItem item: salesOrderitems) {
 
 			String fetchServiceUrl = serviceDiscoveryService.fetchServiceUrl(serviceName);
-			String url = fetchServiceUrl + "/item/" + item.getItemName();
+			String url = fetchServiceUrl + "items/" + item.getItemName();
 
 			ParameterizedTypeReference<Resource<SalesOrderItem>> salesOrderItem = new ParameterizedTypeReference<Resource<SalesOrderItem>>() {};
 			ResponseEntity<Resource<SalesOrderItem>> response = restTemplate.exchange(
