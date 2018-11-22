@@ -2,6 +2,7 @@ package com.abcshopping.salesorder.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,29 +52,52 @@ public class SalesOrderServiceController {
 
 	@PostMapping("/orders")
 	public ResponseEntity<?> createOrder(@RequestBody SalesOrder salesOrder) {
-		String headerMessage = null;
-		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
+		List<String> errorMessages = new ArrayList<String>();
 		List<SalesOrderItem> responseSalesOrderitems = new ArrayList<SalesOrderItem>();
 		
-		if(salesOrderitems == null) {
-			headerMessage = "No items for creating order!";
-		}else {
-			headerMessage = salesOrderItemValidationService.getSalesOrderItems(salesOrder, headerMessage, serviceName, salesOrderitems, responseSalesOrderitems);
-		}
-		SalesOrder savedSalesOrder = null;
-		savedSalesOrder = salesOrderSavingService.saveSalesOrderItems(salesOrder, responseSalesOrderitems, savedSalesOrder);
-		
+		validateInputRequest(salesOrder, errorMessages, responseSalesOrderitems);
 		HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.setLocation(ServletUriComponentsBuilder
-				.fromCurrentRequest().path("/" + savedSalesOrder.getId())
-				.buildAndExpand().toUri());
-
-		if(headerMessage == null || headerMessage.trim().length() <= 0) {
-			headerMessage = "Order created successfully. See you soon!!";
+		
+		if(errorMessages == null || errorMessages.size() <= 0) {
+			SalesOrder savedSalesOrder = salesOrderSavingService.saveSalesOrderItems(salesOrder, responseSalesOrderitems);
+		
+			if(savedSalesOrder != null) {
+				httpHeaders.setLocation(ServletUriComponentsBuilder
+						.fromCurrentRequest().path("/" + savedSalesOrder.getId())
+						.buildAndExpand().toUri());
+			}
+			return new ResponseEntity<>(savedSalesOrder, httpHeaders, HttpStatus.CREATED);
+		}else {
+			
+			httpHeaders.setLocation(ServletUriComponentsBuilder
+					.fromCurrentRequest().path("/error")
+					.build().toUri());
+			
+			return new ResponseEntity<>(errorMessages.toString(), httpHeaders, HttpStatus.FAILED_DEPENDENCY);
 		}
-		httpHeaders.set("Order creation message:",headerMessage);
+		
+	}
 
-		return new ResponseEntity<>(savedSalesOrder, httpHeaders, HttpStatus.CREATED);
+	private void validateInputRequest(SalesOrder salesOrder, List<String> errorMessages,
+			List<SalesOrderItem> responseSalesOrderitems) {
+		Optional<Customer_SOS> customerSOS = customerSOSRepository.findById(salesOrder.getCustomerId());
+		if(customerSOS == null || !customerSOS.isPresent()) {
+			errorMessages.add("No Customer Found in Order Database!");
+			return;
+		}
+		
+		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
+		
+		if(salesOrderitems == null) {
+			errorMessages.add("No items for creating order!");
+			return;
+		}
+		
+		String errorMessage = salesOrderItemValidationService.getSalesOrderItems(salesOrder, serviceName, salesOrderitems, responseSalesOrderitems);
+		if(errorMessage != null && errorMessage.trim().length() > 0) {
+			errorMessages.add(errorMessage);
+		}
+		
 	}
 
 }

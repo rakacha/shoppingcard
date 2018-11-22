@@ -22,8 +22,8 @@ public class SalesOrderSavingService {
 	private SalesOrderItemRepository salesOrderItemRepository;
 	
 	@Transactional
-	public SalesOrder saveSalesOrderItems(SalesOrder salesOrder, List<SalesOrderItem> responseSalesOrderitems,
-			SalesOrder savedSalesOrder) {
+	public SalesOrder saveSalesOrderItems(SalesOrder salesOrder, List<SalesOrderItem> responseSalesOrderitems) {
+		SalesOrder savedSalesOrder = null;
 		if(responseSalesOrderitems.size() > 0) {
 			savedSalesOrder = salesOrderRepository.save(salesOrder);
 			

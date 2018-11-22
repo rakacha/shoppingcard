@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.abcshopping.salesorder.domain.SalesOrder;
 import com.abcshopping.salesorder.domain.SalesOrderItem;
-import com.netflix.discovery.EurekaClient;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @Service
 public class SalesOrderItemValidationService {
@@ -28,39 +28,62 @@ public class SalesOrderItemValidationService {
 	private ServiceDiscoveryService serviceDiscoveryService;
 	private RestTemplate restTemplate = new RestTemplate();
 
-	public String getSalesOrderItems(SalesOrder salesOrder, String headerMessage, String serviceName, List<SalesOrderItem> salesOrderitems,
+	public String getSalesOrderItems(SalesOrder salesOrder, String serviceName, List<SalesOrderItem> salesOrderitems,
 			List<SalesOrderItem> responseSalesOrderitems) {
+		
+		String headerMessage = "";
 		for(SalesOrderItem item: salesOrderitems) {
+			
+			SalesOrderItem  responseItem= null;
+			
+			ResponseEntity<Resource<SalesOrderItem>> response = callItemService(serviceName, item);
 
-			String fetchServiceUrl = serviceDiscoveryService.fetchServiceUrl(serviceName);
-			String url = fetchServiceUrl + "items/" + item.getItemName();
-
-			ParameterizedTypeReference<Resource<SalesOrderItem>> salesOrderItem = new ParameterizedTypeReference<Resource<SalesOrderItem>>() {};
-			ResponseEntity<Resource<SalesOrderItem>> response = restTemplate.exchange(
-					RequestEntity.get(URI.create(url))
-					.accept(MediaTypes.HAL_JSON)
-					.build(),
-					salesOrderItem
-					);
-
+			if(response == null) {
+				headerMessage  = headerMessage + "Item Service currently unavailable. Please try again later!";
+				return headerMessage;
+			}
+			
 			assert response != null;
 			if(response.getStatusCode() == HttpStatus.OK){
-				SalesOrderItem  responseItem = response.getBody().getContent();
+				if(response.getBody() == null) {
+					headerMessage = headerMessage + "No matching item found with the given name: " + item.getItemName() + "\n";
+					continue;
+				}
+				
+				responseItem = response.getBody().getContent();
 				assert responseItem != null;
 
 				if(responseItem == null) {
 					headerMessage = headerMessage + "No matching item found with the given name: " + item.getItemName() + "\n";
-				}
-				else {
-					responseItem.setItemQuantity(item.getItemQuantity());
-					salesOrder.setTotalPrice(salesOrder.getTotalPrice() + (responseItem.getItemPrice() * responseItem.getItemQuantity()));
-					responseSalesOrderitems.add(responseItem);
+					continue;
 				}
 			} 
-
+			
+			if(responseItem != null) {
+				responseItem.setItemQuantity(item.getItemQuantity());
+				salesOrder.setTotalPrice(salesOrder.getTotalPrice() + (responseItem.getItemPrice() * responseItem.getItemQuantity()));
+				responseSalesOrderitems.add(responseItem);
+			}
 		}
 		return headerMessage;
 	}
-	
 
+	public ResponseEntity<Resource<SalesOrderItem>> callItemService(String serviceName, SalesOrderItem item) {
+		String fetchServiceUrl = serviceDiscoveryService.fetchServiceUrl(serviceName);
+		if(fetchServiceUrl == null) {
+			return null;
+		}
+		String url = fetchServiceUrl + "/items/" + item.getItemName();
+
+		ParameterizedTypeReference<Resource<SalesOrderItem>> salesOrderItem = new ParameterizedTypeReference<Resource<SalesOrderItem>>() {};
+		ResponseEntity<Resource<SalesOrderItem>> response = restTemplate.exchange(
+				RequestEntity.get(URI.create(url))
+				.accept(MediaTypes.HAL_JSON)
+				.build(),
+				salesOrderItem
+				);
+		return response;
+	}
+	
+	
 }

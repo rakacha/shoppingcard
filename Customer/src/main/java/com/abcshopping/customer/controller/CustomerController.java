@@ -39,7 +39,7 @@ public class CustomerController {
          HttpHeaders httpHeaders = new HttpHeaders();
          httpHeaders.setLocation(ServletUriComponentsBuilder
                  .fromCurrentRequest().path("/" + savedCustomer.getId())
-                 .buildAndExpand().toUri());
+                 .build().toUri());
 
          return new ResponseEntity<>(savedCustomer, httpHeaders, HttpStatus.CREATED);
     }
