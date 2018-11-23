@@ -31,17 +31,23 @@ public class CustomerController {
 
     @PostMapping("/customer")
     public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
-         Customer savedCustomer = customerRepository.save(customer);
-         
-         assert savedCustomer != null;
-         
-         template.convertAndSend(savedCustomer);
-         HttpHeaders httpHeaders = new HttpHeaders();
-         httpHeaders.setLocation(ServletUriComponentsBuilder
-                 .fromCurrentRequest().path("/" + savedCustomer.getId())
-                 .build().toUri());
+    	
+    	try {
+    		Customer savedCustomer = customerRepository.save(customer);
+            
+            assert savedCustomer != null;
+            
+            template.convertAndSend(savedCustomer);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setLocation(ServletUriComponentsBuilder
+                    .fromCurrentRequest().path("/" + savedCustomer.getId())
+                    .build().toUri());
 
-         return new ResponseEntity<>(savedCustomer, httpHeaders, HttpStatus.CREATED);
+            return new ResponseEntity<>(savedCustomer, httpHeaders, HttpStatus.CREATED);
+    	}catch (Exception e) {
+    		return new ResponseEntity<>("Exception occurred while adding new customer" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+         
     }
 
 }

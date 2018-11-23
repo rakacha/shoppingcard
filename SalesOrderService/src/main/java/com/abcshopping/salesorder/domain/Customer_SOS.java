@@ -3,10 +3,12 @@ package com.abcshopping.salesorder.domain;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
+@Table(name="CUSTOMER_SOS_236220")
 public class Customer_SOS {
 
 	@Id

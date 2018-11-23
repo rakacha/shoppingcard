@@ -6,11 +6,13 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
+@Table(name="SALES_ORDER_236220")
 public class SalesOrder {
 
 	public SalesOrder() {

@@ -1,5 +1,6 @@
 package com.abcshopping.salesorder.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -22,17 +23,22 @@ public class SalesOrderSavingService {
 	private SalesOrderItemRepository salesOrderItemRepository;
 	
 	@Transactional
-	public SalesOrder saveSalesOrderItems(SalesOrder salesOrder, List<SalesOrderItem> responseSalesOrderitems) {
-		SalesOrder savedSalesOrder = null;
-		if(responseSalesOrderitems.size() > 0) {
-			savedSalesOrder = salesOrderRepository.save(salesOrder);
-			
-			for(SalesOrderItem item : responseSalesOrderitems) {
+	public SalesOrder saveSalesOrderItems(SalesOrder salesOrder) throws Exception{
+		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
+		if(salesOrderitems.size() > 0) {
+			SalesOrder savedSalesOrder = salesOrderRepository.save(salesOrder);
+			List<SalesOrderItem> savedSalesOrderItems = new ArrayList<SalesOrderItem>();
+			savedSalesOrder.setSalesOrderitems(savedSalesOrderItems);
+			for(SalesOrderItem item : salesOrderitems) {
 				item.setOrderId(savedSalesOrder.getId());
-				salesOrderItemRepository.save(item);
+				SalesOrderItem savedItem = salesOrderItemRepository.save(item);
+				if(savedItem != null) {
+					savedSalesOrderItems.add(savedItem);
+				}
 			}
+			return savedSalesOrder;
 		}
-		return savedSalesOrder;
+		return null;
 	}
 	
 

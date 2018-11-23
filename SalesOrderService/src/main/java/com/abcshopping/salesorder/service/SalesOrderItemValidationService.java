@@ -28,10 +28,9 @@ public class SalesOrderItemValidationService {
 	private ServiceDiscoveryService serviceDiscoveryService;
 	private RestTemplate restTemplate = new RestTemplate();
 
-	public String getSalesOrderItems(SalesOrder salesOrder, String serviceName, List<SalesOrderItem> salesOrderitems,
-			List<SalesOrderItem> responseSalesOrderitems) {
+	public void getSalesOrderItems(SalesOrder salesOrder, String serviceName, List<String> errorMessages) {
 		
-		String headerMessage = "";
+		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
 		for(SalesOrderItem item: salesOrderitems) {
 			
 			SalesOrderItem  responseItem= null;
@@ -39,14 +38,14 @@ public class SalesOrderItemValidationService {
 			ResponseEntity<Resource<SalesOrderItem>> response = callItemService(serviceName, item);
 
 			if(response == null) {
-				headerMessage  = headerMessage + "Item Service currently unavailable. Please try again later!";
-				return headerMessage;
+				errorMessages.add("Item Service currently unavailable. Please try again later!");
+				return;
 			}
 			
 			assert response != null;
 			if(response.getStatusCode() == HttpStatus.OK){
 				if(response.getBody() == null) {
-					headerMessage = headerMessage + "No matching item found with the given name: " + item.getItemName() + "\n";
+					errorMessages.add("No matching item found with the given name: " + item.getItemName() + "\n");
 					continue;
 				}
 				
@@ -54,18 +53,15 @@ public class SalesOrderItemValidationService {
 				assert responseItem != null;
 
 				if(responseItem == null) {
-					headerMessage = headerMessage + "No matching item found with the given name: " + item.getItemName() + "\n";
+					errorMessages.add("No matching item found with the given name: " + item.getItemName() + "\n");
 					continue;
 				}
 			} 
 			
 			if(responseItem != null) {
-				responseItem.setItemQuantity(item.getItemQuantity());
-				salesOrder.setTotalPrice(salesOrder.getTotalPrice() + (responseItem.getItemPrice() * responseItem.getItemQuantity()));
-				responseSalesOrderitems.add(responseItem);
+				salesOrder.setTotalPrice(salesOrder.getTotalPrice() + (responseItem.getItemPrice() * item.getItemQuantity()));
 			}
 		}
-		return headerMessage;
 	}
 
 	public ResponseEntity<Resource<SalesOrderItem>> callItemService(String serviceName, SalesOrderItem item) {

@@ -3,6 +3,7 @@ package com.abcshopping.salesorder.domain;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
+@Table(name="SALES_ORDER_ITEM_236220")
 public class SalesOrderItem {
 
 	public SalesOrderItem() {

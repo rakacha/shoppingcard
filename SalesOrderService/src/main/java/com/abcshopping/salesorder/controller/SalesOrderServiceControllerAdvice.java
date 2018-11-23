@@ -14,7 +14,7 @@ class SalesOrderServiceControllerAdvice extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(value = { HttpClientErrorException.class })
 	protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
-		String bodyOfResponse = "<h1><font face=\"verdana\">No Directory found.</font></h1>";
+		String bodyOfResponse = "<h1><font face=\"verdana\">No Order could be created.</font></h1>";
 		return handleExceptionInternal(ex, bodyOfResponse,
 				new HttpHeaders(), HttpStatus.NOT_FOUND, request);
 	}
