@@ -34,13 +34,13 @@ public class ServiceDiscoveryService {
 	@HystrixCommand(fallbackMethod="fetchDefaultServiceUrl")
 	public String fetchServiceUrl(String serviceName, SalesOrderItem item) {
 	    ServiceInstance instance = loadBalancerClient.choose(serviceName);
-	    item.setServiceId(instance.getServiceId());
+	    item.setServiceId(instance.getInstanceId());
 	    String serviceUrl = instance.getUri().toString();
-	    System.out.println("discovery service instance id " + instance.getServiceId() + "discovery serviceUrl " + serviceUrl);
+	    System.out.println("discovery service instance id " + instance.getInstanceId() + "discovery serviceUrl " + serviceUrl);
 	    return serviceUrl;
 	}
 	
-	public String fetchDefaultServiceUrl(String serviceName) {
+	public String fetchDefaultServiceUrl(String serviceName, SalesOrderItem item) {
 		return null;
 	}
 

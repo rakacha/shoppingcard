@@ -28,7 +28,6 @@ public class SalesOrderItem {
 	@JsonProperty("name")
 	private String itemName;
 	
-	@Transient
 	@JsonProperty("price")
 	private double itemPrice;
 	
