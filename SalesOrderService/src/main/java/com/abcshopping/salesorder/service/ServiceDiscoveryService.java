@@ -5,6 +5,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Service;
 
+import com.abcshopping.salesorder.domain.SalesOrderItem;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -31,11 +32,11 @@ public class ServiceDiscoveryService {
 	private LoadBalancerClient loadBalancerClient;
 
 	@HystrixCommand(fallbackMethod="fetchDefaultServiceUrl")
-	public String fetchServiceUrl(String serviceName) {
+	public String fetchServiceUrl(String serviceName, SalesOrderItem item) {
 	    ServiceInstance instance = loadBalancerClient.choose(serviceName);
-
+	    item.setServiceId(instance.getServiceId());
 	    String serviceUrl = instance.getUri().toString();
-	    System.out.println("discovery serviceUrl " + serviceUrl);
+	    System.out.println("discovery service instance id " + instance.getServiceId() + "discovery serviceUrl " + serviceUrl);
 	    return serviceUrl;
 	}
 	

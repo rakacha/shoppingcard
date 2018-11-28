@@ -36,6 +36,17 @@ public class SalesOrderItem {
 
 	private String orderId;
 
+	private String serviceId;
+	
+	
+	public String getServiceId() {
+		return serviceId;
+	}
+
+	public void setServiceId(String serviceId) {
+		this.serviceId = serviceId;
+	}
+
 	public String getId() {
 		return id;
 	}

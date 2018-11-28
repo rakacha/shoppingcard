@@ -59,13 +59,14 @@ public class SalesOrderItemValidationService {
 			} 
 			
 			if(responseItem != null) {
+				item.setItemPrice(responseItem.getItemPrice());
 				salesOrder.setTotalPrice(salesOrder.getTotalPrice() + (responseItem.getItemPrice() * item.getItemQuantity()));
 			}
 		}
 	}
 
 	public ResponseEntity<Resource<SalesOrderItem>> callItemService(String serviceName, SalesOrderItem item) {
-		String fetchServiceUrl = serviceDiscoveryService.fetchServiceUrl(serviceName);
+		String fetchServiceUrl = serviceDiscoveryService.fetchServiceUrl(serviceName, item);
 		if(fetchServiceUrl == null) {
 			return null;
 		}
