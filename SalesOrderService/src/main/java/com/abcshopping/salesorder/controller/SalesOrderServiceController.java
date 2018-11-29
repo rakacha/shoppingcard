@@ -17,10 +17,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.abcshopping.salesorder.domain.Customer_SOS;
 import com.abcshopping.salesorder.domain.SalesOrder;
-import com.abcshopping.salesorder.domain.SalesOrderItem;
 import com.abcshopping.salesorder.repository.CustomerSOSRepository;
-import com.abcshopping.salesorder.service.SalesOrderSavingService;
 import com.abcshopping.salesorder.service.SalesOrderItemValidationService;
+import com.abcshopping.salesorder.service.SalesOrderSavingService;
 
 @RestController
 public class SalesOrderServiceController {

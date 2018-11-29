@@ -4,7 +4,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -35,15 +34,15 @@ public class SalesOrderItem {
 
 	private String orderId;
 
-	private String serviceId;
+	private String serviceInstanceId;
 	
 	
-	public String getServiceId() {
-		return serviceId;
+	public String getServiceInstanceId() {
+		return serviceInstanceId;
 	}
 
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
+	public void setServiceInstanceId(String serviceInstanceId) {
+		this.serviceInstanceId = serviceInstanceId;
 	}
 
 	public String getId() {

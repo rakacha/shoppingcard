@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.abcshopping.salesorder.domain.SalesOrder;
 import com.abcshopping.salesorder.domain.SalesOrderItem;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @Service
 public class SalesOrderItemValidationService {
