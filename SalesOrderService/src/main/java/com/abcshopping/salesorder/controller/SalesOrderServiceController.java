@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import com.abcshopping.salesorder.repository.CustomerSOSRepository;
 import com.abcshopping.salesorder.service.SalesOrderItemValidationService;
 import com.abcshopping.salesorder.service.SalesOrderSavingService;
 
+@RefreshScope
 @RestController
 public class SalesOrderServiceController {
 	
@@ -28,7 +30,7 @@ public class SalesOrderServiceController {
 	private CustomerSOSRepository customerSOSRepository;
 	
 	
-	@RabbitListener(queues = "spring-boot-customer-236220")
+	@RabbitListener(queues = "#{'${customer.queue}'}")
 	public void receiveMessage(Customer_SOS customerSOS) {
 		Customer_SOS savedCustomerSOS  = customerSOSRepository.save(customerSOS);
 		
