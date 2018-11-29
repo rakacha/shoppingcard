@@ -15,29 +15,32 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.abcshopping.customer.domain.Customer;
 import com.abcshopping.customer.repository.CustomerRepository;
+import com.abcshopping.customer.service.CustomerQueueingService;
+import com.abcshopping.customer.service.CustomerService;
 
 @RestController
 public class CustomerController {
-	@Autowired
-    CustomerRepository customerRepository;
 	
 	@Autowired
-	private RabbitTemplate template;
+	private CustomerService customerService;
+	
+	@Autowired
+	private CustomerQueueingService queueService;
 	
     @GetMapping("/customers")
     public List<Customer> customers() {
-        return (List<Customer>) customerRepository.findAll();
+        return customerService.getCustomers();
     }
 
     @PostMapping("/customer")
     public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
     	
     	try {
-    		Customer savedCustomer = customerRepository.save(customer);
+    		Customer savedCustomer = customerService.saveCustomer(customer);
             
             assert savedCustomer != null;
             
-            template.convertAndSend(savedCustomer);
+            queueService.sendMessageToQueue(savedCustomer);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setLocation(ServletUriComponentsBuilder
                     .fromCurrentRequest().path("/" + savedCustomer.getId())
