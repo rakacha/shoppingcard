@@ -23,19 +23,10 @@ public class SalesOrderSavingService {
 	private SalesOrderItemRepository salesOrderItemRepository;
 	
 	@Transactional
-	public SalesOrder saveSalesOrderItems(SalesOrder salesOrder) throws Exception{
+	public SalesOrder saveSalesOrder(SalesOrder salesOrder) throws Exception{
 		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
 		if(salesOrderitems.size() > 0) {
 			SalesOrder savedSalesOrder = salesOrderRepository.save(salesOrder);
-			List<SalesOrderItem> savedSalesOrderItems = new ArrayList<SalesOrderItem>();
-			savedSalesOrder.setSalesOrderitems(savedSalesOrderItems);
-			for(SalesOrderItem item : salesOrderitems) {
-				item.setOrderId(savedSalesOrder.getId());
-				SalesOrderItem savedItem = salesOrderItemRepository.save(item);
-				if(savedItem != null) {
-					savedSalesOrderItems.add(savedItem);
-				}
-			}
 			return savedSalesOrder;
 		}
 		return null;

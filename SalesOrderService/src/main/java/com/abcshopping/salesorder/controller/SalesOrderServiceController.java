@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -18,29 +17,19 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.abcshopping.salesorder.domain.Customer_SOS;
 import com.abcshopping.salesorder.domain.SalesOrder;
-import com.abcshopping.salesorder.repository.CustomerSOSRepository;
-import com.abcshopping.salesorder.service.SalesOrderItemValidationService;
+import com.abcshopping.salesorder.domain.SalesOrderItem;
+import com.abcshopping.salesorder.service.CustomerSOSService;
+import com.abcshopping.salesorder.service.SalesOrderPricingService;
 import com.abcshopping.salesorder.service.SalesOrderSavingService;
 
 @RefreshScope
 @RestController
 public class SalesOrderServiceController {
-	
 	@Autowired
-	private CustomerSOSRepository customerSOSRepository;
-	
-	
-	@RabbitListener(queues = "#{'${customer.queue}'}")
-	public void receiveMessage(Customer_SOS customerSOS) {
-		Customer_SOS savedCustomerSOS  = customerSOSRepository.save(customerSOS);
-		
-		assert savedCustomerSOS != null;
-	}
-
-
+	private CustomerSOSService customerSOSService;
 
 	@Autowired
-	private SalesOrderItemValidationService salesOrderItemValidationService;
+	private SalesOrderPricingService salesOrderPricingService;
 	
 	@Autowired
 	private  SalesOrderSavingService salesOrderSavingService;
@@ -55,32 +44,43 @@ public class SalesOrderServiceController {
 	public ResponseEntity<?> createOrder(@RequestBody SalesOrder salesOrder) {
 		List<String> errorMessages = new ArrayList<String>();
 		
-		validateInputRequest(salesOrder, errorMessages);
-		HttpHeaders httpHeaders = new HttpHeaders();
+		if(validateAndRebuildInputRequest(salesOrder, errorMessages)) {
+			double totalOrderPrice = salesOrderPricingService.getSalesOrderItems(salesOrder, serviceName, errorMessages);
+			
+			salesOrder.setTotalPrice(totalOrderPrice);
+
+		}
 		
 		if(errorMessages == null || errorMessages.size() <= 0) {
 
 			try {
-				SalesOrder savedSalesOrder = salesOrderSavingService.saveSalesOrderItems(salesOrder);
-				
-				if(savedSalesOrder != null) {
-					httpHeaders.setLocation(ServletUriComponentsBuilder
-							.fromCurrentRequest().path("/" + savedSalesOrder.getId())
-							.buildAndExpand().toUri());
-				}
-				return new ResponseEntity<>(savedSalesOrder, httpHeaders, HttpStatus.CREATED);
+				SalesOrder savedSalesOrder = salesOrderSavingService.saveSalesOrder(salesOrder);
+				return buildAndReturnSavedSalesOrder(savedSalesOrder);
 			}catch (Exception e) {
 				errorMessages.add("Failed while saving the sales order and items!");
 			}
 		}
-			
+		
+		return buildAndReturnErrorResponse(errorMessages);
+	}
+
+	private ResponseEntity<?> buildAndReturnSavedSalesOrder(SalesOrder savedSalesOrder) {
+		HttpHeaders httpHeaders = new HttpHeaders();
+		if(savedSalesOrder != null) {
+			httpHeaders.setLocation(ServletUriComponentsBuilder
+					.fromCurrentRequest().path("/" + savedSalesOrder.getId())
+					.buildAndExpand().toUri());
+		}
+		return new ResponseEntity<>(savedSalesOrder, httpHeaders, HttpStatus.CREATED);
+	}
+
+	private ResponseEntity<?> buildAndReturnErrorResponse(List<String> errorMessages) {
+		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setLocation(ServletUriComponentsBuilder
 				.fromCurrentRequest().path("/error")
 				.build().toUri());
 		
 		return new ResponseEntity<>(errorMessages.toString(), httpHeaders, HttpStatus.FAILED_DEPENDENCY);
-		
-		
 	}
 
 	/**
@@ -88,19 +88,26 @@ public class SalesOrderServiceController {
 	 * @param errorMessages
 	 * @param responseSalesOrderitems
 	 */
-	private void validateInputRequest(SalesOrder salesOrder, List<String> errorMessages) {
-		Optional<Customer_SOS> customerSOS = customerSOSRepository.findById(salesOrder.getCustomerId());
+	private boolean validateAndRebuildInputRequest(SalesOrder salesOrder, List<String> errorMessages) {
+		Optional<Customer_SOS> customerSOS = customerSOSService.fetchCustomerSOS(salesOrder);
 		if(customerSOS == null || !customerSOS.isPresent()) {
 			errorMessages.add("No Customer Found in Order Database!");
-			return;
+			return false;
 		}
 		
 		if(salesOrder.getSalesOrderitems() == null || salesOrder.getSalesOrderitems().size() <= 0) {
 			errorMessages.add("No items for creating order!");
-			return;
+			return false;
+		}
+		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
+		
+		for(SalesOrderItem item: salesOrderitems) {
+			item.setOrder(salesOrder);
 		}
 		
-		salesOrderItemValidationService.getSalesOrderItems(salesOrder, serviceName, errorMessages);
+		
+		return true;
 	}
+
 
 }

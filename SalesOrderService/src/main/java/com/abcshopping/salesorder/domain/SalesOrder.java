@@ -1,13 +1,15 @@
 package com.abcshopping.salesorder.domain;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -30,8 +32,8 @@ public class SalesOrder {
 	private String orderDesc;
 	private double totalPrice;
 	
-	@Transient
-	private List<SalesOrderItem> salesOrderitems;
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<SalesOrderItem> salesOrderitems = new ArrayList<SalesOrderItem>();
 	
 	public List<SalesOrderItem> getSalesOrderitems() {
 		return salesOrderitems;
@@ -39,6 +41,21 @@ public class SalesOrder {
 	public void setSalesOrderitems(List<SalesOrderItem> salesOrderitems) {
 		this.salesOrderitems = salesOrderitems;
 	}
+	
+	public void addSalesOrderitem(SalesOrderItem item) {
+		salesOrderitems.add(item);
+		item.setOrder(this);
+	}
+	
+	public void removeSalesOrderitem(SalesOrderItem item) {
+		salesOrderitems.remove(item);
+		item.setOrder(null);
+	}
+	
+	public void removeAllSalesOrderItems() {
+		salesOrderitems.clear();
+	}
+	
 	public String getId() {
 		return id;
 	}
