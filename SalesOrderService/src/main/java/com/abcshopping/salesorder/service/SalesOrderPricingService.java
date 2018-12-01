@@ -1,5 +1,6 @@
 package com.abcshopping.salesorder.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,10 @@ public class SalesOrderPricingService {
 	@Autowired
 	private ItemServiceInvokerService itemServiceInvokerService;
 
-	public double getSalesOrderItems(SalesOrder salesOrder, String serviceName, List<String> errorMessages) {
+	public double getSalesOrderTotalPrice(SalesOrder salesOrder, String serviceName, List<String> errorMessages) {
 		
 		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
+		List<SalesOrderItem> pricedSalesOrderitems = new ArrayList<SalesOrderItem>();
 		double totalPrice = 0.0d;
 		for(SalesOrderItem item: salesOrderitems) {
 			
@@ -29,8 +31,10 @@ public class SalesOrderPricingService {
 			if(responseItem != null) {
 				item.setItemPrice(responseItem.getItemPrice());
 				totalPrice += responseItem.getItemPrice() * item.getItemQuantity();
+				pricedSalesOrderitems.add(item);
 			}
 		}
+		salesOrder.setSalesOrderitems(pricedSalesOrderitems);
 		return totalPrice;
 	}
 

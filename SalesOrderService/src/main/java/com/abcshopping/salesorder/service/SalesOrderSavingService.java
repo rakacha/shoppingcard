@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.abcshopping.salesorder.domain.SalesOrder;
 import com.abcshopping.salesorder.domain.SalesOrderItem;
-import com.abcshopping.salesorder.repository.SalesOrderItemRepository;
 import com.abcshopping.salesorder.repository.SalesOrderRepository;
 
 @Service
@@ -18,10 +17,6 @@ public class SalesOrderSavingService {
 	@Autowired
 	private SalesOrderRepository salesOrderRepository;
 	
-	@Autowired
-	private SalesOrderItemRepository salesOrderItemRepository;
-	
-	@Transactional
 	public SalesOrder saveSalesOrder(SalesOrder salesOrder) throws Exception{
 		List<SalesOrderItem> salesOrderitems = salesOrder.getSalesOrderitems();
 		if(salesOrderitems.size() > 0) {

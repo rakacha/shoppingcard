@@ -45,17 +45,16 @@ public class SalesOrderServiceController {
 		List<String> errorMessages = new ArrayList<String>();
 		
 		if(validateAndRebuildInputRequest(salesOrder, errorMessages)) {
-			double totalOrderPrice = salesOrderPricingService.getSalesOrderItems(salesOrder, serviceName, errorMessages);
-			
+			double totalOrderPrice = salesOrderPricingService.getSalesOrderTotalPrice(salesOrder, serviceName, errorMessages);
 			salesOrder.setTotalPrice(totalOrderPrice);
 
 		}
 		
-		if(errorMessages == null || errorMessages.size() <= 0) {
+		if(salesOrder.getTotalPrice() > 0) {
 
 			try {
 				SalesOrder savedSalesOrder = salesOrderSavingService.saveSalesOrder(salesOrder);
-				return buildAndReturnSavedSalesOrder(savedSalesOrder);
+				return buildAndReturnSavedSalesOrder(savedSalesOrder, errorMessages);
 			}catch (Exception e) {
 				errorMessages.add("Failed while saving the sales order and items!");
 			}
@@ -64,8 +63,11 @@ public class SalesOrderServiceController {
 		return buildAndReturnErrorResponse(errorMessages);
 	}
 
-	private ResponseEntity<?> buildAndReturnSavedSalesOrder(SalesOrder savedSalesOrder) {
+	private ResponseEntity<?> buildAndReturnSavedSalesOrder(SalesOrder savedSalesOrder, List<String> errorMessages) {
 		HttpHeaders httpHeaders = new HttpHeaders();
+		if(errorMessages != null && errorMessages.size() > 0) {
+			httpHeaders.add("Item_save_failed", errorMessages.toString());
+		}
 		if(savedSalesOrder != null) {
 			httpHeaders.setLocation(ServletUriComponentsBuilder
 					.fromCurrentRequest().path("/" + savedSalesOrder.getId())
