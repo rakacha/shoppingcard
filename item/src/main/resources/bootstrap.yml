@@ -2,4 +2,6 @@
 spring:
   application:
     name: item-236220
+  zipkin:
+    baseUrl: http://localhost:9411/zipkin
   

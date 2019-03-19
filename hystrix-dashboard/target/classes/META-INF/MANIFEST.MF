@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Implementation-Title: hystrix-dashboard
 Implementation-Version: 0.0.1-SNAPSHOT
-Built-By: Administrator
+Built-By: Rakesh
 Implementation-Vendor-Id: io.pivotal
-Build-Jdk: 1.8.0_181
+Build-Jdk: 1.8.0_151
 Implementation-URL: http://projects.spring.io/spring-boot/hystrix-dash
  board/
 Created-By: Maven Integration for Eclipse
