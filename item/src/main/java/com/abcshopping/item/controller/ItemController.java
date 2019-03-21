@@ -30,6 +30,7 @@ public class ItemController {
 
     @GetMapping("/items/{name}")
     public Item getItem(@PathVariable("name") String name){
+    	LOG.log(Level.INFO, "get " + name + " items called");
         List<Item> items = itemService.getItemByName(name);
         
         if(items != null && items.size() > 0) {
