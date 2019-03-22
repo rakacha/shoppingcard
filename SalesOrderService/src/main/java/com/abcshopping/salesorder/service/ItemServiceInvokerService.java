@@ -41,7 +41,9 @@ public class ItemServiceInvokerService {
 	
 	@Autowired
 	private LoadBalancerClient loadBalancerClient;
-	private RestTemplate restTemplate = new RestTemplate();
+	
+	@Autowired
+	private RestTemplate restTemplate;
 
 	@HystrixCommand(fallbackMethod="callDefaultItemService")
 	public SalesOrderItem callItemService(String serviceName, SalesOrderItem item, List<String> errorMessages) {

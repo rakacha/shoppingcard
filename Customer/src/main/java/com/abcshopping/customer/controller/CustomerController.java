@@ -1,6 +1,8 @@
 package com.abcshopping.customer.controller;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,8 @@ import com.abcshopping.customer.service.CustomerService;
 @RestController
 public class CustomerController {
 	
+	private final Logger LOG = Logger.getLogger(CustomerController.class.getName());
+	
 	@Autowired
 	private CustomerService customerService;
 	
@@ -32,7 +36,7 @@ public class CustomerController {
 
     @PostMapping("/customer")
     public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
-    	
+    	LOG.log(Level.ALL, "Adding customer");
     	try {
     		Customer savedCustomer = customerService.saveCustomer(customer);
             

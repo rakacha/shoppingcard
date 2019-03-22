@@ -3,6 +3,8 @@ package com.abcshopping.salesorder.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,8 @@ public class SalesOrderServiceController {
 	
 	private final String serviceName;
 
+	private final Logger LOG = Logger.getLogger(SalesOrderServiceController.class.getName());
+	
 	SalesOrderServiceController(@Value("${item.service.name}") String serviceName){
 		this.serviceName = serviceName;
 	}
@@ -43,7 +47,7 @@ public class SalesOrderServiceController {
 	@PostMapping("/orders")
 	public ResponseEntity<?> createOrder(@RequestBody SalesOrder salesOrder) {
 		List<String> errorMessages = new ArrayList<String>();
-		
+		LOG.log(Level.INFO, "Calling Sales Order Save method");
 		if(validateAndRebuildInputRequest(salesOrder, errorMessages)) {
 			double totalOrderPrice = salesOrderPricingService.getSalesOrderTotalPrice(salesOrder, serviceName, errorMessages);
 			salesOrder.setTotalPrice(totalOrderPrice);
