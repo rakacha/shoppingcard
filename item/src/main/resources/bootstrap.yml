@@ -2,4 +2,8 @@
 spring:
   application:
     name: item-236220
-  
+  boot:
+    admin:
+      client:
+        enabled: true
+        url: http://localhost:9060  
