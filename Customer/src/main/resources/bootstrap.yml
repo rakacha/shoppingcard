@@ -1,0 +1,4 @@
+#JPA
+spring:
+  application:
+    name: customer-236220
