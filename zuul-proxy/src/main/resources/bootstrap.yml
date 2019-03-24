@@ -1,0 +1,18 @@
+#JPA
+spring:
+  application:
+    name: zuul-proxy
+    
+server:
+  port: 8111
+  
+zuul:
+  prefix: /api
+  routes:
+    itemservice:
+      path: /item-proxy/**
+      service-id: item-236220
+    customerservice:
+      path: /customer-proxy/**
+      url: http://localhost:8083/
+      
